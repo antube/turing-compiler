@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+*.json
+
+*.tm
+
+turing-interpreter
+
+Makefile
