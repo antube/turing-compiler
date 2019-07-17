@@ -11,4 +11,4 @@ main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp
 
 clean:
-	rm -rf *o turing-interpreter
+	rm -rf *.o turing-interpreter

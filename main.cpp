@@ -1,11 +1,20 @@
 #include <iostream>
 #include <fstream>
+#include <string.h>
 #include "structs/card.h"
 
 #define INSTRUCTION_LENGTH 16
 
 int ReadMovement(char);
 instruction ReadInstruction(char*);
+
+void append(char* s, char c)
+{
+    int len = strlen(s);
+
+    s[len] = c;
+    s[len + 1] = '\0';
+}
 
 int main(int argc, char *argv[])
 {
@@ -31,8 +40,12 @@ int main(int argc, char *argv[])
         std::ofstream tmofile;
         try
         {
+            char* name = argv[1];
+
+            append(argv[1], 'o');
+
             //Open ouput file stream as a binary file and truncate all contents
-            tmofile.open((argv[1] + 'o'), std::ios::binary | std::ios::out | std::ios::trunc);
+            tmofile.open(name, std::ios::binary | std::ios::out | std::ios::trunc);
         }
         catch(...)
         {
@@ -67,14 +80,17 @@ int main(int argc, char *argv[])
             catch(const char* msg)
             {
                 //Return Message
-                std::cout << "Issue at Line " << LineIndex << ": " << msg << std::endl;
+                std::cout << "Issue on Line " << LineIndex << ": " << msg << std::endl;
                 break;
             }
 
             //
             tmofile.write((char*) &inst, sizeof(instruction));
         }
-    }   
+
+        tmfile.close();
+        tmofile.close();
+    }
     return 0;
 }
 
@@ -84,7 +100,7 @@ instruction ReadInstruction(char* line)
     instruction inst;
 
     //
-    if(line[4] < 48 || line[4] > 49)
+    if(line[4] < 48 && line[4] > 49)
         //
         throw "Issue at Col 5";
     else
@@ -92,7 +108,7 @@ instruction ReadInstruction(char* line)
         inst.Input = line[4] - 48;
     
     //
-    if(line[7] < 48 || line[7] > 49)
+    if(line[7] < 48 && line[7] > 49)
         //
         throw "Issue at Col 8";
     else
@@ -100,7 +116,7 @@ instruction ReadInstruction(char* line)
         inst.Output = line[7] - 48;
     
     //
-    if(line[10] < 48 || line[10] > 57)
+    if(line[10] < 48 && line[10] > 57)
         //
         throw "Issue at Col 11";
     else
@@ -109,7 +125,7 @@ instruction ReadInstruction(char* line)
 
     try
     {
-        inst.Movement = ReadMovement(line[13]);
+        inst.Movement = ReadMovement(line[12]);
     }
     catch(const char* msg)
     {
