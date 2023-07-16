@@ -1,0 +1,53 @@
+# A file is made of a set of cards
+# A card is made of a set of a header and 2 instructions 
+# A Instruction is made of an Input, Output, Next Card, and Movement
+#
+#     The card header is any descriptor to assist the user with identify the
+# cards usage
+#
+# As may have been noted comments are given with the # symbol
+#
+# 
+
+# Example cards
+
+#CARD is a keyword defining the card header
+CARD Card1
+    # INS is a keyword which defines that an instruction is following
+    # Each term on the instruction is seperated by a colon
+    #
+    # First Term
+    #     is a programmer help shows which input is being worked on
+    #       0 : first instruction
+    #       1 : second instruction
+    #
+    # Second Term
+    #     is the output to the tape
+    #       0 : outputs a 0 to the tape
+    #       1 : outputs a 1 to the tape
+    #       | : Leaves the tape alone
+    #
+    # Third Term
+    #     is the name of the card to move to next
+    #       NAME : No spaces 
+    #          - : so you don't have to specify a name if your halting
+    #
+    # Fourth Term
+    #     is the movement to be applied to the read head
+    #       < : move head left
+    #       > : move head right
+    #       | : Don't move head
+    #       ^ : Halt
+
+    INS 0 : 1 : Card2 : <
+    INS 1 : 1 : Card3 : >
+
+
+CARD Card2
+    INS 0 : | :    - : ^
+    INS 1 : 0 : Card3: |
+
+
+CARD Card3
+    INS 0 : | :    - : ^
+    INS 1 : 0 : Card2: |
