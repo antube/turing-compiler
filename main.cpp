@@ -22,13 +22,6 @@ void Parse(std::vector<std::string>&, std::string&);
 void BuildCardMap(std::ifstream&, std::map<std::string, int>&);
 
 
-void append(char* s, char c)
-{
-    int len = strlen(s);
-
-    s[len] = c;
-    s[len + 1] = '\0';
-}
 
 int main(int argc, char *argv[])
 {
