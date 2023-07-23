@@ -184,16 +184,16 @@ int ThirdTermParse(std::string &term, std::unordered_map<std::string, int> &card
     
     int id = -1;
 
-    try
+    if (cardIdentifiers.find(term) != cardIdentifiers.end())
     {
-        id = cardIdentifiers.at(term);
+        id = cardIdentifiers[term];
     }
-    catch(...)
+    else
     {
         std::cout << "Bad card identifier: " << term << std::endl;
         return -2;
     }
-    
+
     return id;
 }
 
@@ -242,6 +242,7 @@ void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &c
 
     infile.seekg(0, infile.beg);
 }
+
 
 
 /*******************************************
