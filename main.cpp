@@ -244,21 +244,26 @@ void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &c
 }
 
 
-
-/****************************************
- * Name : Parser
+/*******************************************
+ * Name : Parse
  * 
- * Description : 
+ * Description :
+ *     Calls the Parser and removes any unnessecary elements such as colons.
+ *   Colons are used for visually breaking up the program for easier reading
+ *   but are unnessecary for the actual parsing
  * 
+ * Arguments :
+ *     line : std::string : holds a string of text to be parsed
  * 
- * 
- * 
- * 
- * 
- * 
+ * Return : 
+ *      std::shared_ptr<std::vector<string>> : A shared pointer to a vector of
+ *    strings which hold the results of the parsing
 */
-void Parser(std::vector<std::string> &parsed, std::string &line, std::unordered_map<char, int> &delinators)
+void Parse(std::vector<std::string> &parsed, std::string &line)
 {
+    // create a map of chars to represent the delinators
+    std::unordered_map<char, int> delinators({{' ', 1},{':', 1},{'\t', 1},{'#', 2}});
+
     //The current string
     std::string term;
 
@@ -296,29 +301,4 @@ void Parser(std::vector<std::string> &parsed, std::string &line, std::unordered_
         parsed.push_back(term);
         term.clear();
     }
-}
-
-
-/*******************************************
- * Name : Parse
- * 
- * Description :
- *     Calls the Parser and removes any unnessecary elements such as colons.
- *   Colons are used for visually breaking up the program for easier reading
- *   but are unnessecary for the actual parsing
- * 
- * Arguments :
- *     line : std::string : holds a string of text to be parsed
- * 
- * Return : 
- *      std::shared_ptr<std::vector<string>> : A shared pointer to a vector of
- *    strings which hold the results of the parsing
-*/
-void Parse(std::vector<std::string> &parsed, std::string &line)
-{
-    // create a map of chars to represent the delinators
-    std::unordered_map<char, int> delinators({{' ', 1},{':', 1},{'\t', 1},{'#', 2}});
-
-    // call the Parser
-    Parser(parsed, line, delinators);
 }
