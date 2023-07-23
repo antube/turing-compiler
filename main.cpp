@@ -4,7 +4,7 @@
 #include <string.h>
 #include <vector>
 #include <memory>
-#include <map>
+#include <unordered_map>
 
 #include "structs/card.h"
 
@@ -15,11 +15,11 @@
 
 
 int SecondTermParse(std::string&);
-int ThirdTermParse(std::string&, std::map<std::string, int>&);
+int ThirdTermParse(std::string&, std::unordered_map<std::string, int>&);
 int FourthTermParse(std::string&);
 
 void Parse(std::vector<std::string>&, std::string&);
-void BuildCardMap(std::ifstream&, std::map<std::string, int>&);
+void BuildCardMap(std::ifstream&, std::unordered_map<std::string, int>&);
 
 
 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         }
 
         Card car;
-        std::map<std::string, int> cardIdentifierMap;
+        std::unordered_map<std::string, int> cardIdentifierMap;
         int count = 0;
 
         BuildCardMap(infile, cardIdentifierMap);
@@ -175,7 +175,7 @@ int SecondTermParse(std::string &term)
 
 
 
-int ThirdTermParse(std::string &term, std::map<std::string, int> &cardIdentifiers)
+int ThirdTermParse(std::string &term, std::unordered_map<std::string, int> &cardIdentifiers)
 {
     if (term == "-")
     {
@@ -211,6 +211,36 @@ int FourthTermParse(std::string &term)
         return 2;
 
     return -5;
+}
+
+
+
+void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &cardIdentifierMap)
+{
+    infile.seekg(0, infile.beg);
+
+    int count = 0;
+
+    while (!infile.eof())
+    {
+        std::string line;
+        std::getline(infile, line);
+
+        std::vector<std::string> parsed;
+
+        Parse(parsed, line);
+
+        if (parsed.size() < 2)
+            continue;
+
+        if (parsed[0] == "CARD")
+        {
+            cardIdentifierMap[parsed[1]] = count;
+            count++;
+        }
+    }
+
+    infile.seekg(0, infile.beg);
 }
 
 
@@ -315,34 +345,4 @@ void Parse(std::vector<std::string> &parsed, std::string &line)
             }
         }
     }
-}
-
-
-
-void BuildCardMap(std::ifstream &infile, std::map<std::string, int> &cardIdentifierMap)
-{
-    infile.seekg(0, infile.beg);
-
-    int count = 0;
-
-    while (!infile.eof())
-    {
-        std::string line;
-        std::getline(infile, line);
-
-        std::vector<std::string> parsed;
-
-        Parse(parsed, line);
-
-        if (parsed.size() < 2)
-            continue;
-
-        if (parsed[0] == "CARD")
-        {
-            cardIdentifierMap[parsed[1]] = count;
-            count++;
-        }
-    }
-
-    infile.seekg(0, infile.beg);
 }
