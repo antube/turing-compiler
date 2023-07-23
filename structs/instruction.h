@@ -20,7 +20,7 @@ struct Instruction
     signed char Movement;
 
     //Next card to execute
-    long long NextState;
+    unsigned long long NextState;
 
 
     void read(std::ifstream &infile)

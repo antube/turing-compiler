@@ -8,11 +8,11 @@
 
 
 
-int SecondTermParse(std::string&);
-int ThirdTermParse(std::string&, std::unordered_map<std::string, int>&);
-int FourthTermParse(std::string&);
+int SecondTermParse(signed char&, const std::string&);
+int ThirdTermParse(unsigned long long&, const std::string&, const std::unordered_map<std::string, int>&);
+int FourthTermParse(signed char&, const std::string&);
 
-void Parse(std::vector<std::string>&, std::string&);
+void Parse(std::vector<std::string>&, const std::string&);
 void BuildCardMap(std::ifstream&, std::unordered_map<std::string, int>&);
 
 
@@ -82,27 +82,23 @@ int main(int argc, char *argv[])
 
                 count++;
             }
-            else if (parsed.at(0) == "INS" && parsed.size() == 5)
+            else if (parsed[0] == "INS" && parsed.size() == 5)
             {
                 if (parsed.at(1) == "0")
                 {
-
-                    car.Ins0.Output = SecondTermParse(parsed.at(2));
-                    if (car.Ins0.Output == -5)
+                    if (SecondTermParse(car.Ins0.Output, parsed[2]) == -5)
                     {
                         std::cout << "Error bad second term at input 0 in card " << count << std::endl;
                         return -1;
                     }
                     
-                    car.Ins0.NextState = ThirdTermParse(parsed.at(3), cardIdentifierMap);
-                    if (car.Ins0.NextState == -2LL)
+                    if (ThirdTermParse(car.Ins0.NextState, parsed[3], cardIdentifierMap) == -2)
                     {
                         std::cout << "Error bad third term at input 0 in card " << count << std::endl;
                         return -1;
                     }
 
-                    car.Ins0.Movement = FourthTermParse(parsed.at(4));
-                    if (car.Ins0.Movement == -5)
+                    if (FourthTermParse(car.Ins0.Movement, parsed[4]) == -5)
                     {
                         std::cout << "Error bad fourth term at input 0 in card " << count << std::endl;
                         return -1;
@@ -110,22 +106,19 @@ int main(int argc, char *argv[])
                 }
                 else if (parsed.at(1) == "1")
                 {
-                    car.Ins1.Output = SecondTermParse(parsed.at(2));
-                    if (car.Ins1.Output == -5)
+                    if (SecondTermParse(car.Ins1.Output, parsed[2]) == -5)
                     {
                         std::cout << "Error bad second term at input 1 in card " << count << std::endl;
                         return -1;
                     }
 
-                    car.Ins1.NextState = ThirdTermParse(parsed.at(3), cardIdentifierMap);
-                    if (car.Ins1.NextState == -2LL)
+                    if (ThirdTermParse(car.Ins1.NextState, parsed.at(3), cardIdentifierMap) == -2)
                     {
                         std::cout << "Error bad third term at input 1 in card " << count << std::endl;
                         return -1;
                     }
 
-                    car.Ins1.Movement = FourthTermParse(parsed.at(4));
-                    if (car.Ins1.Movement == -5)
+                    if (FourthTermParse(car.Ins1.Movement, parsed.at(4)) == -5)
                     {
                         std::cout << "Error bad fourth term at input 0 in card " << count << std::endl;
                         return -1;
@@ -155,32 +148,33 @@ int main(int argc, char *argv[])
 
 
 
-int SecondTermParse(std::string &term)
+int SecondTermParse(signed char & val, const std::string &term)
 {
     if (term == "0")
-        return 0;
+        val = 0;
     else if (term == "1")
-        return 1;
+        val = 1;
     else if (term == "|")
-        return -1;
+        val = -1;
+    else
+        return -5;
 
-    return -5;
+    return 0;
 }
 
 
 
-int ThirdTermParse(std::string &term, std::unordered_map<std::string, int> &cardIdentifiers)
+int ThirdTermParse(unsigned long long &val, const std::string &term, const std::unordered_map<std::string, int> &cardIdentifiers)
 {
     if (term == "-")
     {
-        return -1;
+        val = -1;
+        return 0;
     }
-    
-    int id = -1;
 
     if (cardIdentifiers.find(term) != cardIdentifiers.end())
     {
-        id = cardIdentifiers[term];
+        val = cardIdentifiers.at(term);
     }
     else
     {
@@ -188,23 +182,25 @@ int ThirdTermParse(std::string &term, std::unordered_map<std::string, int> &card
         return -2;
     }
 
-    return id;
+    return 0;
 }
 
 
 
-int FourthTermParse(std::string &term)
+int FourthTermParse(signed char &val, const std::string &term)
 {
     if (term == "<")
-        return -1;
+        val = -1;
     else if (term == "|")
-        return 0;
+        val = 0;
     else if (term == ">")
-        return 1;
+        val = 1;
     else if (term == "^")
-        return 2;
+        val = 2;
+    else
+        return -5;
 
-    return -5;
+    return 0;
 }
 
 
@@ -254,7 +250,7 @@ void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &c
  *      std::shared_ptr<std::vector<string>> : A shared pointer to a vector of
  *    strings which hold the results of the parsing
 */
-void Parse(std::vector<std::string> &parsed, std::string &line)
+void Parse(std::vector<std::string> &parsed, const std::string &line)
 {
     // create a map of chars to represent the delinators
     std::unordered_map<char, int> delinators({{' ', 1},{':', 1},{'\t', 1},{'#', 2}});
@@ -263,7 +259,7 @@ void Parse(std::vector<std::string> &parsed, std::string &line)
     std::string term;
 
     // iterate through the line one character at a time
-    for (char &c : line)
+    for (const char &c : line)
     {
         // true if the current character is not among the delinators
         bool notDelinator = true;
