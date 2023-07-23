@@ -257,7 +257,7 @@ void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &c
  * 
  * 
 */
-void Parser(std::vector<std::string> &parsed, std::string &line, std::vector<char> &delinators)
+void Parser(std::vector<std::string> &parsed, std::string &line, std::unordered_map<char, int> &delinators)
 {
     //The current string
     std::string term;
@@ -268,24 +268,21 @@ void Parser(std::vector<std::string> &parsed, std::string &line, std::vector<cha
         // true if the current character is not among the delinators
         bool notDelinator = true;
 
-        // iterate through the delinators
-        for (char d : delinators)
+        // check if the current character is a delinator
+        if (delinators.find(c) != delinators.end())
         {
-            // check if the current character is a delinator
-            if (c == d)
-            {
-                // if the current character is a delinator set the not delinator to false 
-                notDelinator = false;
+            // if the current character is a delinator set the not delinator to false 
+            notDelinator = false;
 
-                // if the term is not of length 0 push it to the back of the parsed vector and clear term
-                if (term.length() != 0)
-                {
-                    parsed.push_back(term);
-                    term.clear();
-                }
-
-                // not nessecary to continue checking
+            // if the delinator is a class two delinator ignore everything after it
+            if (delinators[c] == 2)
                 break;
+
+            // if the term is not of length 0 push it to the back of the parsed vector and clear term
+            if (term.length() != 0)
+            {
+                parsed.push_back(term);
+                term.clear();
             }
         }
 
@@ -319,30 +316,9 @@ void Parser(std::vector<std::string> &parsed, std::string &line, std::vector<cha
 */
 void Parse(std::vector<std::string> &parsed, std::string &line)
 {
-    char del[] = {' ', ':', '\t'};
-    // create a shared pointer to a vector of chars to represent the 
-    std::vector<char> delinators(del, del + sizeof(del) / sizeof(char));
+    // create a map of chars to represent the delinators
+    std::unordered_map<char, int> delinators({{' ', 1},{':', 1},{'\t', 1},{'#', 2}});
 
     // call the Parser
     Parser(parsed, line, delinators);
-
-    // iterate through the vector
-    for (long unsigned int i = 0; i < parsed.size(); i++)
-    {
-        // search for the comment delinator and erase everything after it
-        if (parsed.at(i).find_first_of('#') != std::string::npos)
-        {
-            // remove all parsed sections after the first instance of the comment delinator
-            parsed.erase(parsed.begin() + i + 1, parsed.end());
-            // remove comment delinator and everything after it from the string which it is found in
-            parsed.at(i) = parsed.at(i).substr(0, parsed.at(i).find_first_of('#'));
-
-            // if the remove operation cleared out the string completly remove it from the vector
-            if (parsed.at(i).length() == 0)
-            {
-                // remove the string from the vector
-                parsed.erase(parsed.begin() + i);
-            }
-        }
-    }
 }
