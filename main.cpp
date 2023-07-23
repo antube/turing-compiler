@@ -1,16 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <string.h>
 #include <vector>
-#include <memory>
 #include <unordered_map>
 
 #include "structs/card.h"
-
-
-
-#define INSTRUCTION_LENGTH 16
 
 
 
