@@ -53,17 +53,26 @@ int main(int argc, char *argv[])
             return -1;
         }
 
-        Card car;
-        std::unordered_map<std::string, int> cardIdentifierMap;
-        int count = 0;
 
+        // create the card which will be populated
+        Card car;
+
+        // create the card identifier map,
+        // this map takes the card name and maps it to a card position with the file
+        std::unordered_map<std::string, int> cardIdentifierMap;
+        int count = 0; // This is the 
+
+
+        // build the map of card poisitions
         int status = BuildCardMap(infile, cardIdentifierMap);
 
-        if (status >= 0)
+        if (status >= 0) // Check the status for an error code
         {
             std::cout << "ERROR: duplicate card name at card : " << status << std::endl;
             return -1;
         }
+
+
 
         // read the input file
         while(!infile.eof())
@@ -75,12 +84,19 @@ int main(int argc, char *argv[])
             //Read from input file into char array
             std::getline(infile, line);
 
-            Parse(parsed, line);
+            Parse(parsed, line); // call parse on the line
 
+
+
+            //////////////////////////////////////////////////////////////////////////////////
+            // I am not entirely happy with this janky setup but for the moment it works
+            //////////////////////////////////////////////////////////////////////////////////
+
+            // if there are fewer than 2 
             if (parsed.size() < 2)
                 continue;
             
-
+            // If the key word CARD is specified 
             if (parsed[0] == "CARD" && parsed.size() == 2)
             {
                 if (count != 0)
@@ -90,7 +106,7 @@ int main(int argc, char *argv[])
             }
             else if (parsed[0] == "INS" && parsed.size() == 5)
             {
-                if (parsed.at(1) == "0")
+                if (parsed[1] == "0")
                 {
                     if (SecondTermParse(car.Ins0.Output, parsed[2]) == -5)
                     {
