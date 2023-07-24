@@ -13,7 +13,7 @@ int ThirdTermParse(unsigned long long&, const std::string&, const std::unordered
 int FourthTermParse(signed char&, const std::string&);
 
 void Parse(std::vector<std::string>&, const std::string&);
-void BuildCardMap(std::ifstream&, std::unordered_map<std::string, int>&);
+int BuildCardMap(std::ifstream&, std::unordered_map<std::string, int>&);
 
 
 
@@ -57,7 +57,13 @@ int main(int argc, char *argv[])
         std::unordered_map<std::string, int> cardIdentifierMap;
         int count = 0;
 
-        BuildCardMap(infile, cardIdentifierMap);
+        int status = BuildCardMap(infile, cardIdentifierMap);
+
+        if (status >= 0)
+        {
+            std::cout << "ERROR: duplicate card name at card : " << status << std::endl;
+            return -1;
+        }
 
         // read the input file
         while(!infile.eof())
@@ -205,7 +211,7 @@ int FourthTermParse(signed char &val, const std::string &term)
 
 
 
-void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &cardIdentifierMap)
+int BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &cardIdentifierMap)
 {
     infile.seekg(0, infile.beg);
 
@@ -225,12 +231,21 @@ void BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &c
 
         if (parsed[0] == "CARD")
         {
-            cardIdentifierMap[parsed[1]] = count;
-            count++;
+            if (cardIdentifierMap.find(parsed[1]) != cardIdentifierMap.end())
+            {
+                cardIdentifierMap[parsed[1]] = count;
+                count++;
+            }
+            else
+            {
+                return count;
+            }
         }
     }
 
     infile.seekg(0, infile.beg);
+
+    return -1;
 }
 
 
