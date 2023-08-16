@@ -4,6 +4,9 @@
 
 struct Instruction
 {
+    
+    signed char Input;
+
     /* What to write to tape
      * -1 : Leave as is
      *  0 : Write a Zero

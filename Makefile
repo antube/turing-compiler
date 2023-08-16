@@ -5,10 +5,10 @@ CC = g++ -g
 CFLAGS = -c -Wall
 
 main: main.o
-	$(CC) main.o -o turing-interpreter
+	$(CC) main.o -o turint
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp
 
 clean:
-	rm -rf *.o turing-interpreter
+	rm -rf *.o turint
