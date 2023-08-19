@@ -1,5 +1,5 @@
 #Compiler
-CC = g++ -g
+CC = g++ -g -std=c++2a
 
 #Options
 CFLAGS = -c -Wall

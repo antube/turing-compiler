@@ -45,20 +45,12 @@ int main(int argc, char *argv[])
         // create the output file name (just the input files name with an o appended)
         std::string name(argv[1]);
 
-        try
-        {
-            
-        if (std::regex_match(name, std::regex("*\x2Etur")))
-            name.push_back('o');
+
+        if (std::regex_match(name, std::regex(".*\x2Etur$")))
+            name.push_back('b');
         else
-            name = name + ".turo";
-        
-        }
-        catch(const std::regex_error& e)
-        {
-            std::cout << "regex error caught : " << e.what() << std::endl;
-            return -1;
-        }
+            name = name + ".turb";
+
 
         // create the output file stream
         std::ofstream outfile (name, std::ios::binary | std::ios::trunc);
@@ -152,6 +144,8 @@ int main(int argc, char *argv[])
                             std::cout << "Error bad fourth term at input 0 in card " << count << std::endl;
                             return -1;
                         }
+
+                        instructions.push_back(ins);
                     }
                     // the instruction seems to be malformed
                     else
@@ -167,6 +161,7 @@ int main(int argc, char *argv[])
                 {
                     // return that a problem has occured
                     std::cout << "ERROR bad instruction count at card " << count << std::endl;
+                    return -1;
                 }
 
                 // sort the list of instructions in ascending order and check for an error.
@@ -174,6 +169,7 @@ int main(int argc, char *argv[])
                 {
                     // if an error has occured I am not sure how it got here HELP ME
                     std::cout << "ERROR not sure how I got here please debug for developer" << std::endl;
+                    return -1;
                 }
 
 
@@ -217,7 +213,7 @@ int main(int argc, char *argv[])
         }
 
 
-        // close the input and output file
+        // close the input and output files
         infile.close();
         outfile.close();
     }
@@ -228,35 +224,45 @@ int main(int argc, char *argv[])
 
 int FirstTermParse(signed char &val, const std::string &term)
 {
-    val = stoi(term);
+    // convert the string to a unsigned int value and assign into the val variable
+    val = stoul(term);
 
+    // if the val is not within the valid range of 0 and 127
     if (val < 0 || val > 127)
     {
+        // throw an error
         val = -1;
         return -5;
     }
 
+    // otherwise return success
     return 0;
 }
 
 
 int SecondTermParse(signed char &val, const std::string &term)
 {
+    // check if the term is the leave as is identifier
     if (term == "|")
     {
+        // assign the corisponding value
         val = -1;
     }
     else
     {
-        val = stoi(term);
+        // try and convert the term in an unsigned int value, I want this to blow up if it is not an unsigned value
+        val = stoul(term);
 
+        // check if the value is out of range
         if (val < 0 || val > 127)
         {
+            // if so return an error
             val = -1;
             return -5;
         }
     }
 
+    // oterwise return success
     return 0;
 }
 
@@ -264,22 +270,28 @@ int SecondTermParse(signed char &val, const std::string &term)
 
 int ThirdTermParse(unsigned long long &val, const std::string &term, const std::unordered_map<std::string, int> &cardIdentifiers)
 {
+    // check if this is the no card specified identifier
     if (term == "-")
     {
+        // if so return no error and set the value to -1
         val = -1;
         return 0;
     }
 
+    // check for the card in the card identifiers
     if (cardIdentifiers.find(term) != cardIdentifiers.end())
     {
+        // get the position of the card and assign it to the val
         val = cardIdentifiers.at(term);
     }
     else
     {
+        // otherwise no card was found by that identifier and therefore return error
         std::cout << "Bad card identifier: " << term << std::endl;
         return -2;
     }
 
+    // return success
     return 0;
 }
 
@@ -287,17 +299,27 @@ int ThirdTermParse(unsigned long long &val, const std::string &term, const std::
 
 int FourthTermParse(signed char &val, const std::string &term)
 {
+    // check if the term is the move left idetifier
     if (term == "<")
+        // assign the value -1 to val
         val = -1;
+    // if the term is the do not move idetifier
     else if (term == "|")
+        // assign the value 0 to val
         val = 0;
+    // if the term is the move right identifier
     else if (term == ">")
+        // assign the value 1 to val
         val = 1;
+    // if the term is the halt identifier
     else if (term == "^")
+        // assign 2 to val
         val = 2;
     else
+        // otherwise return an error
         return -5;
 
+    // if succesful return success
     return 0;
 }
 
@@ -323,7 +345,7 @@ int BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &ca
 
         if (parsed[0] == "CARD")
         {
-            if (cardIdentifierMap.find(parsed[1]) != cardIdentifierMap.end())
+            if (cardIdentifierMap.find(parsed[1]) == cardIdentifierMap.end())
             {
                 cardIdentifierMap[parsed[1]] = count;
                 count++;
@@ -430,6 +452,9 @@ int read(std::vector<std::string> &parsed, std::ifstream &infile, int min)
 {
     //Create string to hold instruction
     std::string line;
+
+    // clear the parsed vector
+    parsed.clear();
 
     //Read from input file into char array
     std::getline(infile, line);
