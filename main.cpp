@@ -17,7 +17,7 @@ int FourthTermParse(signed char&, const std::string&);
 void Parse(std::vector<std::string>&, const std::string&);
 int BuildCardMap(std::ifstream&, std::unordered_map<std::string, int>&);
 int Sort(std::vector<Instruction>&);
-int read(std::vector<std::string>&, std::ifstream&, int);
+int Read(std::ifstream&, std::vector<std::string>&, int = 0);
 
 
 
@@ -66,13 +66,15 @@ int main(int argc, char *argv[])
         // create the card identifier map,
         // this map takes the card name and maps it to a card position with the file
         std::unordered_map<std::string, int> cardIdentifierMap;
-        int count = 0; // This is the 
+        int count = 0; // This is the
+        signed char base = 2;
+        bool baseExist = false;
 
 
         // build the map of card poisitions
         int status = BuildCardMap(infile, cardIdentifierMap);
 
-        if (status >= 0) // Check the status for an error code
+        if (status != -1) // Check the status for an error code
         {
             std::cout << "ERROR: duplicate card name at card : " << status << std::endl;
             return -1;
@@ -85,9 +87,9 @@ int main(int argc, char *argv[])
         {
             //Create string to hold instruction
             std::vector<std::string> parsed;
-            read(parsed, infile, 2);
+            Read(infile, parsed, 2);
 
-            signed char base = 2;
+            
 
 
             // If the key word CARD is specified 
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
                     Instruction ins;
 
                     // read a line and parse it
-                    read(parsed, infile, 2);
+                    Read(infile, parsed, 2);
 
                     // check that this is actually a instruction with the proper syntax
                     if (parsed[0] == "INS" && parsed.size() == 5)
@@ -200,8 +202,10 @@ int main(int argc, char *argv[])
                     return -1;
                 }
 
-                // write the base to file
-                outfile.write((char*)&base, sizeof(signed char));
+                //set flag that a base was specified
+                baseExist = true;
+
+                // I wait till the end of the file as it makes the equations similar on the machines end
             }
             // else bad keyword
             else
@@ -213,6 +217,11 @@ int main(int argc, char *argv[])
         }
 
 
+        // write the base to the outfile
+        outfile.seekp(0, outfile.end);
+        outfile.write((char*)&base, sizeof(signed char));
+
+
         // close the input and output files
         infile.close();
         outfile.close();
@@ -222,6 +231,18 @@ int main(int argc, char *argv[])
 }
 
 
+/*******************************************
+ * Name : 
+ * 
+ * Description :
+ *     
+ * 
+ * Arguments :
+ *     
+ * 
+ * Return : 
+ *      
+*********************************************/
 int FirstTermParse(signed char &val, const std::string &term)
 {
     // convert the string to a unsigned int value and assign into the val variable
@@ -240,6 +261,18 @@ int FirstTermParse(signed char &val, const std::string &term)
 }
 
 
+/*******************************************
+ * Name : SecondTermParse
+ * 
+ * Description :
+ *     
+ * 
+ * Arguments :
+ *     
+ * 
+ * Return : 
+ *      
+*********************************************/
 int SecondTermParse(signed char &val, const std::string &term)
 {
     // check if the term is the leave as is identifier
@@ -268,6 +301,18 @@ int SecondTermParse(signed char &val, const std::string &term)
 
 
 
+/*******************************************
+ * Name : 
+ * 
+ * Description :
+ *     
+ * 
+ * Arguments :
+ *     
+ * 
+ * Return : 
+ *      
+*********************************************/
 int ThirdTermParse(unsigned long long &val, const std::string &term, const std::unordered_map<std::string, int> &cardIdentifiers)
 {
     // check if this is the no card specified identifier
@@ -297,6 +342,18 @@ int ThirdTermParse(unsigned long long &val, const std::string &term, const std::
 
 
 
+/*******************************************
+ * Name : FourthTermParse
+ * 
+ * Description :
+ *     
+ * 
+ * Arguments :
+ *     
+ * 
+ * Return : 
+ *      
+*********************************************/
 int FourthTermParse(signed char &val, const std::string &term)
 {
     // check if the term is the move left idetifier
@@ -325,40 +382,74 @@ int FourthTermParse(signed char &val, const std::string &term)
 
 
 
+
+/*******************************************
+ * Name : BuildCardMap
+ * 
+ * Description :
+ *     Runs through the file ahead of time and builds a map of the cards
+ *        and there position inrelation to each other returning to the caller
+ *        an unordered map of names as keys and position of the card as value
+ * 
+ *        The card map will return the read position to the beginning of the file
+ * 
+ * Arguments :
+ *                infile : &std::ifstream                        : A caller supplied ifstream to read from
+ *     cardIdentifierMap : &std::unordered_map<std::string, int> : The caller supplied unordered map to write to
+ * 
+ * Return : 
+ *      int : the exit status code : -1 if succesful ; otherwise it will be the card position which is problamatic or another error code
+*********************************************/
 int BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &cardIdentifierMap)
 {
+    // store the current position in the stream
+    int initialStreamPos = infile.tellg();
+
+    // check if there was problem with the stream
+    if (initialStreamPos == -1)
+        return -2;
+
+
+    // seek to the beggining of the file to ensure proper positioning
     infile.seekg(0, infile.beg);
 
+    // create count and set to zero
     int count = 0;
 
+    // iterate through the file
     while (!infile.eof())
     {
-        std::string line;
-        std::getline(infile, line);
-
+        // create a parsed list
         std::vector<std::string> parsed;
 
-        Parse(parsed, line);
+        // read line from file and store it in parsed
+        Read(infile, parsed, 2);
 
-        if (parsed.size() < 2)
-            continue;
-
+        // check if this is a card line
         if (parsed[0] == "CARD")
         {
+            // if so check for a similarly named card in the map
             if (cardIdentifierMap.find(parsed[1]) == cardIdentifierMap.end())
             {
+                // if there is no similarly named card add the card and increase the card count
                 cardIdentifierMap[parsed[1]] = count;
                 count++;
             }
             else
             {
+                // otherwise there is a duplicate
+                // return the card count as an error
                 return count;
             }
         }
     }
 
-    infile.seekg(0, infile.beg);
+    // return to the beggining of the file
+    infile.seekg(initialStreamPos, infile.beg);
 
+    // return success
+    // this function has a a weird success return as it is possible for the failure to be 0
+    //     as in the first card
     return -1;
 }
 
@@ -373,12 +464,12 @@ int BuildCardMap(std::ifstream &infile, std::unordered_map<std::string, int> &ca
  *   but are unnessecary for the actual parsing
  * 
  * Arguments :
- *     line : std::string : holds a string of text to be parsed
+ *     parsed : &std::vector<std::string> : 
+ *       line : &std::string              : holds a string of text to be parsed
  * 
  * Return : 
- *      std::shared_ptr<std::vector<string>> : A shared pointer to a vector of
- *    strings which hold the results of the parsing
-*/
+ *      void
+*********************************************/
 void Parse(std::vector<std::string> &parsed, const std::string &line)
 {
     // create a map of chars to represent the delinators
@@ -416,39 +507,81 @@ void Parse(std::vector<std::string> &parsed, const std::string &line)
             term.push_back(c);
     }
 
+    // if the term length is not equal to zero
     if (term.length() != 0)
     {
+        // then the term can be pushed to the back of the list
+        //    as the term is cleared out at the beggining of a run (above)
+        //    a non empty term means a term was completed but not added
         parsed.push_back(term);
         term.clear();
     }
 }
 
 
-int Sort(std::vector<Instruction> &inss)
+
+/*******************************************
+ * Name : Sort
+ * 
+ * Description :
+ *     Sorts a vector of instructions in ascending order by the input member
+ * 
+ * Arguments :
+ *     ins : &std::vector<Instruction> : instructions to sort
+ * 
+ * Return : 
+ *      int : exit status
+ *             0 = success
+*********************************************/
+int Sort(std::vector<Instruction> &ins)
 {
-    int count = 0;
+    int count = 0; // create and intialize the cout variable, to used to count how many items have been moved in an iteration
+    
+    // check if the count is not equal to zero
     while (count != 0)
     {
-        count = 0;
+        count = 0; // reset the count to zero to ensure I actually know if sorting has been happening
 
-        for (int i = 0; i < inss.size() - 2; i++)
+        // iterate through the list 
+        for (int i = 0; i < ins.size() - 2; i++)
         {
-            if (inss[i].Input > inss[i + 1].Input)
+            // if the current instruction input is greater than the next instruction
+            if (ins[i].Input > ins[i + 1].Input)
             {
-                Instruction temp = inss[1];
-                inss[i] = inss[i + 1];
-                inss[i + 2] = temp;
+                // switch the current and next instruction
+                Instruction temp = ins[1];
+                ins[i] = ins[i + 1];
+                ins[i + 2] = temp;
                 count++;
             }
         }
     }
 
+    // return success
     return 0;
 }
 
 
 
-int read(std::vector<std::string> &parsed, std::ifstream &infile, int min)
+/*******************************************
+ * Name : Read
+ * 
+ * Description :
+ *     Reads a line from a text file and parses the text. Once parsed the read will check how many
+ *        items are were return from the parser and compare to the min. If it is less than the specified min
+ *        it will continue until either the min is achieved or an eof is achieved.
+ * 
+ * Arguments :
+ *     infile : &std::ifstream            : The text file to read from
+ *     parsed : &std::vector<std::string> : A vector of strings containing the parsed text from the line read in
+ *        min :  int                      : The minnimium number of parsed items 
+ * 
+ * Return : 
+ *      int : The exit status
+ *             0 = success
+ *            -1 = end of file achieved
+*********************************************/
+int Read(std::ifstream &infile, std::vector<std::string> &parsed, int min = 0)
 {
     //Create string to hold instruction
     std::string line;
@@ -456,14 +589,19 @@ int read(std::vector<std::string> &parsed, std::ifstream &infile, int min)
     // clear the parsed vector
     parsed.clear();
 
+    // Check if the file is at the end
+    if (infile.eof())
+        return -1;
+
     //Read from input file into char array
     std::getline(infile, line);
 
     Parse(parsed, line); // call parse on the line
 
-    // if there are fewer than 2 
+    // if there are fewer than the min in parsed read the next line
     if (parsed.size() < min)
-        read(parsed, infile, min);
+        return Read(infile, parsed, min);
 
+    // return success
     return 0;
 }
